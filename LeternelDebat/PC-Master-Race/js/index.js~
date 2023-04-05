@@ -1,0 +1,267 @@
+/**************************************/
+/** Event Listeners                   */
+/**************************************/
+
+document.addEventListener("deviceready", onDeviceReady);
+document.addEventListener("pause", onPause);
+document.addEventListener("resume", onResume);
+document.addEventListener("backbutton", onBackButton);
+
+document.addEventListener("deviceready", onDeviceReady, false);
+
+
+document.getElementById("getLoc").addEventListener("click", getLoc);
+document.getElementById("getMeteo").addEventListener("click", getWeatherLocation);
+/**************************************/
+
+/** Variables Globales  */
+/**********************/
+var Latitude;
+var Longitude;
+var newetat;
+var etat='non branché';
+
+
+/** Functions                         */
+/**************************************/
+function onDeviceReady()
+{
+	console.log("onDeviceReady");
+	/*
+	var parentElement = document.getElementById("deviceready");
+	var listeningElement = parentElement.querySelector(".listening");
+	var receivedElement = parentElement.querySelector(".received");
+	
+	listeningElement.style.display = "none";
+	receivedElement.style.display = "block";
+	*/
+	document.getElementById('acacher').style.visibility="hidden";
+	
+	console.log("navigator.geolocation works well");
+	
+	window.addEventListener("batterystatus", onBatteryStatus, false);
+	console.log(level);
+}
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+function onPause()
+{
+	console.log("onPause");
+}
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+function onResume()
+{
+	console.log("onResume");
+    document.getElementById('acacher').style.visibility="hidden";
+    //Update de la météo
+    watchWeatherPosition();
+}
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+function onBackButton()
+{
+	console.log("onBackButton");
+}
+
+
+function getLoc()
+{
+// Appel de la var onSuccess et affichage de coordonnees
+// objet position qui contient les coordonnees
+var onSuccess = function(position) {
+    Latitude=position.coords.latitude;
+    Longitude=position.coords.longitude;
+    Altitude=position.coords.altitude;
+    var altitudearrondie= Math.round(Altitude);
+    alert('Latitude: '          + Latitude          + '°' + '\n' +
+          'Longitude: '         + Longitude        + '°' + '\n' +
+          'Altitude: '          + altitudearrondie          + ' mètres' + '\n' );
+};
+
+// onError Callback receives a PositionError object
+var onError =function afficheonError(error) {
+    alert('code: '    + error.code    + '\n' +
+          'message: ' + error.message + '\n');
+};
+
+navigator.geolocation.getCurrentPosition(onSuccess, onError);
+}
+
+
+function getWeatherLocation() {
+    navigator.geolocation.getCurrentPosition(onWeatherSuccess, onWeatherError);
+
+}
+
+//fonction a executee en cas de succes
+var onWeatherSuccess = function(position) {
+    //definit la latitude et la longitude
+    Latitude = position.coords.latitude;
+    Longitude = position.coords.longitude;
+
+    //appel de l fonction getWeather avec les coordonnées en paramètres
+    getWeather(Latitude, Longitude);
+    }
+ 
+//Avoir la meteo en fonction des coordonnees
+function getWeather(latitude, longitude) {
+ 
+    //cle api
+    var OpenWeatherAppKey = "12077457d1082d6e415458ebc0fc90d6";
+ 
+    //variable contenant la requete
+    var queryString ='http://api.openweathermap.org/data/2.5/weather?lat='+latitude+'&lon='+longitude+'&appid='+OpenWeatherAppKey+'&units=metric'+'&lang=fr';
+
+    //requete jquery
+    $.getJSON(queryString, function (results) {
+        if (results.weather.length) {
+            $.getJSON(queryString, function (results) {
+                
+                //si la requête aboutie
+                if (results.weather.length) {
+                    //on enregistre les valeurs voulues dans des variables       
+                    var ville= results.name ;
+                    var ciel= results.weather[0].description;
+                    var temperature= results.main.temp;
+                    var vent=results.wind.speed;
+                    var humidite= results.main.humidity;
+                    
+                    var sunriseDate = new Date(results.sys.sunrise*1000);
+                    $('#sunrise').text(sunriseDate.toLocaleTimeString());
+ 
+                    var sunsetDate = new Date(results.sys.sunset*1000);
+                    $('#sunset').text(sunsetDate.toLocaleTimeString());
+                    
+                    //expressions regulières pour déterminer l'image à afficher
+                    var soleil = RegExp('soleil|dégagé');
+                    var nuage = RegExp('nuage|couvert');
+                    var pluie = RegExp('plu');
+                    var neige = RegExp('neige');
+                    var orage = RegExp('orage|éclair');
+
+                    //Test de l'image
+                    var test=soleil.test(ciel);
+
+                    if (test) {
+                        var ladate=new Date();
+                        var h=ladate.getHours();
+                        var m=ladate.getMinutes();
+                        
+                        if ((h<=sunriseDate.getHours() && m<=sunriseDate.getMinutes()) || (h>=sunsetDate.getHours() && m>=sunsetDate.getMinutes()))
+                        {
+                            document.getElementById('image').style.background="url(./img/lune.png) no-repeat center top";
+                        }
+                        else {
+                            document.getElementById('image').style.background="url(./img/soleil.png) no-repeat center top";
+                        }                    
+                    }
+                    else {
+                        test=nuage.test(ciel);
+
+                        if (test) {
+                            document.getElementById('image').style.background="url(./img/nuages.png) no-repeat center top";
+                        }
+                        else {
+                            test=pluie.test(ciel);
+
+                            if (test) {
+                                document.getElementById('image').style.background="url(./img/pluie.png) no-repeat center top";
+                            }
+                            else {
+                                test=neige.test(ciel);
+
+                                if (test) {
+                                    document.getElementById('image').style.background="url(./img/neige.png) no-repeat center top";
+                                }
+                                else {
+                                    console.log('pas de neige');
+                                    test=orage.test(ciel);
+
+                                    if (test) {
+                                        console.log('expression régulière orage ok');
+                                        document.getElementById('image').style.background="url(./img/orage.png) no-repeat center top";
+                                    }
+ 
+                                }
+                            }
+                        }
+                    }                      
+                    
+                    //Fin du test image
+
+                    //on mets les valeurs des variables qui contiennent les infos dans des divs html
+                    document.getElementById('ville').innerHTML= ville;
+                	document.getElementById('description').innerHTML='Temps: '+ciel;
+                	document.getElementById('temperature').innerHTML='Température: ' + temperature + '°C';
+                	document.getElementById('vent').innerHTML='Vent: '+vent+'km/h';	
+                	document.getElementById('humidite').innerHTML='Humidité: '+humidite+'%';
+
+                    //on affcihe les divs qui contiennent les infos 
+                    document.getElementById('acacher').style.visibility="visible";
+                }
+ 
+            });
+        }
+    }).fail(function (jqXHR, textStatus, error) {
+        console.log("erreur");
+    });
+    
+}
+// Retour d'erreur
+function onWeatherError(error) {
+    console.log('code: ' + error.code + '\n' +
+        'message: ' + error.message + '\n');
+}
+
+
+// Watch your changing position
+function watchWeatherPosition() {
+    return navigator.geolocation.watchPosition
+    (onWeatherWatchSuccess, onWeatherError,  { enableHighAccuracy: true });
+}
+
+// Success callback for watching your changing position
+var onWeatherWatchSuccess = function (position) {
+
+    //récupération des coordonnées
+    var updatedLatitude = position.coords.latitude;
+    var updatedLongitude = position.coords.longitude;
+
+        //si les coordonnées sont différentes
+         if (updatedLatitude != Latitude && updatedLongitude != Longitude) {
+
+            //MAJ des coordonnées avec les nouvelles coordonnées
+            Latitude = updatedLatitude;
+            Longitude = updatedLongitude;
+
+            // Appel de la fonction getWeather
+            getWeather(updatedLatitude, updatedLongitude);
+
+        }   
+     
+}    
+
+
+function onBatteryStatus(status) {
+	if (status.isPlugged) {
+		newetat='branché';
+		getWeatherLocation();
+	 }
+	else{
+		newetat='non branché';
+	}
+	if (etat != newetat)
+	{
+		etat=newetat;
+		alert(" téléphone " + etat);
+	}
+	
+    if (status.level>80 || status.isPlugged) {
+        getWeatherLocation();
+   }
+}
+
+/**************************************/

@@ -1,0 +1,9 @@
+#docker-compose.yml
+version: '3.3'
+
+services:
+    leterneldebat:
+        image: registry.hackynov.fr/chall_leterneldebat
+        container_name: container_leterneldebat
+        ports:
+            - "20080:80"

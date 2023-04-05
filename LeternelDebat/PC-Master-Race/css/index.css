@@ -1,0 +1,58 @@
+* {
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
+}
+
+body {
+
+    background-color:#E4E4E4;
+    
+    font-family: system-ui, -apple-system, -apple-system-font, 'Segoe UI', 'Roboto', sans-serif;
+    font-size:18px;
+    height:100vh;
+    margin:0px;
+    padding:0px;
+    padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-right, 0px);
+    text-transform:uppercase;
+    width:100%;
+}
+
+h1 {
+    text-align: center;
+}
+
+p {
+    text-align: center;
+}
+
+.navbar {
+    text-align: center;
+    width: 100%;
+    background-color: black;
+}
+
+.bout {
+    display: inline;
+    font-size: 20px;
+    border-radius: 8px;
+}
+
+.bout:hover {
+    display: inline-flex;
+    font-size: 20px;
+    border-radius: 8px;
+    border-color: red;
+    border-width: 3px;
+}
+
+#getPC {
+    margin-left: 10%;
+}
+
+#getConsole {
+    margin-right: 10%
+}
+
+#getIt {
+    margin-left: 250px;
+    margin-right: 250px;
+}
